@@ -30,6 +30,7 @@ import me.lucko.luckperms.common.cacheddata.UserCachedDataManager;
 import me.lucko.luckperms.common.config.ConfigKeys;
 import me.lucko.luckperms.common.plugin.LuckPermsPlugin;
 
+import me.lucko.luckperms.common.storage.misc.DataConstraints;
 import net.kyori.adventure.text.Component;
 import net.luckperms.api.query.QueryOptions;
 
@@ -123,7 +124,7 @@ public class User extends PermissionHolder {
      * @return true if a change was made
      */
     public boolean setUsername(String name, boolean weak) {
-        if (name != null && name.length() > 16) {
+        if (name != null && name.length() > DataConstraints.MAX_PLAYER_USERNAME_LENGTH) {
             return false; // nope
         }
 
