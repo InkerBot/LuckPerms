@@ -67,6 +67,7 @@ import me.lucko.luckperms.common.sender.Sender;
 import me.lucko.luckperms.common.util.ImmutableCollectors;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 
@@ -219,6 +220,8 @@ public class CommandManager {
                     .append(Component.space())
                     .append(Component.text("v" + this.plugin.getBootstrap().getVersion(), NamedTextColor.AQUA))
                     .append(Message.FULL_STOP)
+                    .append(Component.newline())
+                    .append(Component.text(sender.getName()))
             ));
 
             if (hasPermissionForAny(sender)) {
@@ -288,25 +291,27 @@ public class CommandManager {
     }
 
     private void sendCommandUsage(Sender sender, String label) {
-        sender.sendMessage(Message.prefixed(Component.text()
+        TextComponent.Builder builder = Component.text()
                 .color(NamedTextColor.DARK_GREEN)
                 .append(Component.text("Running "))
                 .append(Component.text(AbstractLuckPermsPlugin.getPluginName(), NamedTextColor.AQUA))
                 .append(Component.space())
                 .append(Component.text("v" + this.plugin.getBootstrap().getVersion(), NamedTextColor.AQUA))
                 .append(Message.FULL_STOP)
-        ));
+                .append(Component.newline());
 
         this.mainCommands.values().stream()
                 .filter(Command::shouldDisplay)
                 .filter(c -> c.isAuthorized(sender))
-                .forEach(c -> sender.sendMessage(Component.text()
+                .forEach(c -> builder.append(Component.text()
                         .append(Component.text('>', NamedTextColor.DARK_AQUA))
                         .append(Component.space())
                         .append(Component.text(String.format(c.getUsage(), label), NamedTextColor.GREEN))
                         .clickEvent(ClickEvent.suggestCommand(String.format(c.getUsage(), label)))
+                        .append(Component.newline())
                         .build()
                 ));
+        sender.sendMessage(builder.build());
     }
 
     /**

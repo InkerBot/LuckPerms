@@ -28,7 +28,7 @@ CREATE INDEX `{prefix}group_permissions_name` ON `{prefix}group_permissions` (`n
 
 CREATE TABLE `{prefix}players` (
   `uuid`          VARCHAR(36) NOT NULL,
-  `username`      VARCHAR(16) NOT NULL,
+  `username`      VARCHAR(256) NOT NULL,
   `primary_group` VARCHAR(36) NOT NULL,
   PRIMARY KEY (`uuid`)
 ) DEFAULT CHARSET = utf8mb4;

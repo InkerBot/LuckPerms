@@ -34,6 +34,9 @@ import me.lucko.luckperms.common.plugin.LuckPermsPlugin;
 import me.lucko.luckperms.common.sender.Sender;
 import me.lucko.luckperms.common.util.Predicates;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentBuilder;
+import net.kyori.adventure.text.TextComponent;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.Collections;
@@ -63,7 +66,7 @@ public abstract class ParentCommand<T, I> extends Command<Void> {
     public void execute(LuckPermsPlugin plugin, Sender sender, Void ignored, ArgumentList args, String label) {
         // check if required argument and/or subcommand is missing
         if (args.size() < this.type.minArgs) {
-            sendUsage(sender, label);
+            sender.sendMessage(sendUsage(sender, label));
             return;
         }
 
@@ -154,24 +157,29 @@ public abstract class ParentCommand<T, I> extends Command<Void> {
     }
 
     @Override
-    public void sendUsage(Sender sender, String label) {
+    public Component sendUsage(Sender sender, String label) {
         List<Command<?>> subs = getChildren().stream()
                 .filter(s -> s.isAuthorized(sender))
                 .collect(Collectors.toList());
-
+        TextComponent.Builder builder = Component.text();
         if (!subs.isEmpty()) {
-            Message.MAIN_COMMAND_USAGE_HEADER.send(sender, getName(), String.format(getUsage(), label));
+            builder.append(
+                    Message.MAIN_COMMAND_USAGE_HEADER.build(getName(), String.format(getUsage(), label))
+            );
+            builder.append(Component.newline());
             for (Command<?> s : subs) {
-                s.sendUsage(sender, label);
+                builder.append(s.sendUsage(sender, label))
+                        .append(Component.newline());
             }
+            return builder.build();
         } else {
-            Message.COMMAND_NO_PERMISSION.send(sender);
+            return Message.COMMAND_NO_PERMISSION.build();
         }
     }
 
     @Override
     public void sendDetailedUsage(Sender sender, String label) {
-        sendUsage(sender, label);
+        sender.sendMessage(sendUsage(sender, label));
     }
 
     @Override

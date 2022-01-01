@@ -1,0 +1,13 @@
+{
+  "name": "luckperms",
+  "describe": "A permissions plugin.",
+  "version": "${pluginVersion}",
+  "urls": {
+    "home": "home",
+    "source": "source",
+    "issue": "issue"
+  },
+  "main": "bot.inker.lp.LpIbBootstrap",
+  "depends": [
+  ]
+}

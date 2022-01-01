@@ -152,7 +152,7 @@ public final class ConfigKeys {
     /**
      * # If the servers own UUID cache/lookup facility should be used when there is no record for a player in the LuckPerms cache.
      */
-    public static final ConfigKey<Boolean> USE_SERVER_UUID_CACHE = booleanKey("use-server-uuid-cache", false);
+    public static final ConfigKey<Boolean> USE_SERVER_UUID_CACHE = booleanKey("use-server-uuid-cache", true);
 
     /**
      * If LuckPerms should allow usernames with non alphanumeric characters.

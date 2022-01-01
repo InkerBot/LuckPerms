@@ -36,6 +36,9 @@ import me.lucko.luckperms.common.plugin.LuckPermsPlugin;
 import me.lucko.luckperms.common.sender.Sender;
 import me.lucko.luckperms.common.util.Iterators;
 import me.lucko.luckperms.common.util.Predicates;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentBuilder;
+import net.kyori.adventure.text.TextComponent;
 
 import java.util.Collection;
 import java.util.List;
@@ -71,14 +74,17 @@ public class ListGroups extends SingleCommand {
             pageIndex = 0;
         }
 
-        Message.SEARCH_SHOWING_GROUPS.send(sender, page, pages.size(), groups.size());
-        Message.GROUPS_LIST.send(sender);
+        TextComponent.Builder builder = Component.text();
+        builder.append(Message.SEARCH_SHOWING_GROUPS.build(page, pages.size(), groups.size()));
+        builder.append(Component.newline());
+        builder.append(Message.GROUPS_LIST.build());
 
         Collection<? extends Track> allTracks = plugin.getTrackManager().getAll().values();
 
         for (Group group : pages.get(pageIndex)) {
             List<String> tracks = allTracks.stream().filter(t -> t.containsGroup(group)).map(Track::getName).collect(Collectors.toList());
-            Message.GROUPS_LIST_ENTRY.send(sender, group, group.getWeight().orElse(0), tracks);
+            builder.append(Message.GROUPS_LIST_ENTRY.build(group, group.getWeight().orElse(0), tracks));
         }
+        sender.sendMessage(builder.build());
     }
 }

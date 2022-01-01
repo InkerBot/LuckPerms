@@ -47,6 +47,7 @@ import me.lucko.luckperms.common.sender.Sender;
 import me.lucko.luckperms.common.util.Uuids;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.luckperms.api.actionlog.Action;
 import net.luckperms.api.event.cause.CreationCause;
 import net.luckperms.api.event.cause.DeletionCause;
@@ -151,8 +152,9 @@ public class WebEditorResponse {
         }
 
         if (!work) {
-            Message.APPLY_EDITS_TARGET_NO_CHANGES_PRESENT.send(sender);
+            session.getBuilder().append(Message.APPLY_EDITS_TARGET_NO_CHANGES_PRESENT.build()).append(Component.newline());
         }
+        sender.sendMessage(session.build());
     }
 
     /**
@@ -161,6 +163,7 @@ public class WebEditorResponse {
     private static class Session {
         private final LuckPermsPlugin plugin;
         private final Sender sender;
+        private final TextComponent.Builder builder = Component.text();
 
         Session(LuckPermsPlugin plugin, Sender sender) {
             this.plugin = plugin;
@@ -175,7 +178,7 @@ public class WebEditorResponse {
             } else if (type.equals("track")) {
                 return applyTrackChange(changeInfo);
             } else {
-                Message.APPLY_EDITS_UNKNOWN_TYPE.send(this.sender, type);
+                builder.append(Message.APPLY_EDITS_UNKNOWN_TYPE.build(type)).append(Component.newline());
                 return false;
             }
         }
@@ -189,12 +192,12 @@ public class WebEditorResponse {
                 // user
                 UUID uuid = Uuids.parse(id);
                 if (uuid == null) {
-                    Message.APPLY_EDITS_TARGET_USER_NOT_UUID.send(this.sender, id);
+                    builder.append(Message.APPLY_EDITS_TARGET_USER_NOT_UUID.build(id)).append(Component.newline());
                     return false;
                 }
                 holder = this.plugin.getStorage().loadUser(uuid, null).join();
                 if (holder == null) {
-                    Message.APPLY_EDITS_TARGET_USER_UNABLE_TO_LOAD.send(this.sender, uuid.toString());
+                    builder.append(Message.APPLY_EDITS_TARGET_USER_UNABLE_TO_LOAD.build(uuid.toString()));
                     return false;
                 }
             } else {
@@ -206,7 +209,7 @@ public class WebEditorResponse {
             }
 
             if (ArgumentPermissions.checkModifyPerms(this.plugin, this.sender, CommandPermission.APPLY_EDITS, holder) || ArgumentPermissions.checkGroup(this.plugin, this.sender, holder, ImmutableContextSetImpl.EMPTY)) {
-                Message.COMMAND_NO_PERMISSION.send(this.sender);
+                builder.append(Message.COMMAND_NO_PERMISSION.build()).append(Component.newline());
                 return false;
             }
 
@@ -231,13 +234,13 @@ public class WebEditorResponse {
                         .build().submit(this.plugin, this.sender);
             }
 
-            Message.APPLY_EDITS_SUCCESS.send(this.sender, type, holder.getFormattedDisplayName());
-            Message.APPLY_EDITS_SUCCESS_SUMMARY.send(this.sender, added.size(), removed.size());
+            builder.append(Message.APPLY_EDITS_SUCCESS.build(type, holder.getFormattedDisplayName())).append(Component.newline());
+            builder.append(Message.APPLY_EDITS_SUCCESS_SUMMARY.build(added.size(), removed.size())).append(Component.newline());
             for (Node n : added) {
-                Message.APPLY_EDITS_DIFF_ADDED.send(this.sender, n);
+                builder.append(Message.APPLY_EDITS_DIFF_ADDED.build(n)).append(Component.newline());
             }
             for (Node n : removed) {
-                Message.APPLY_EDITS_DIFF_REMOVED.send(this.sender, n);
+                builder.append(Message.APPLY_EDITS_DIFF_REMOVED.build(n)).append(Component.newline());
             }
             StorageAssistant.save(holder, this.sender, this.plugin);
             return true;
@@ -252,7 +255,7 @@ public class WebEditorResponse {
             }
 
             if (ArgumentPermissions.checkModifyPerms(this.plugin, this.sender, CommandPermission.APPLY_EDITS, track)) {
-                Message.COMMAND_NO_PERMISSION.send(this.sender);
+                builder.append(Message.COMMAND_NO_PERMISSION.build()).append(Component.newline());
                 return false;
             }
 
@@ -288,10 +291,10 @@ public class WebEditorResponse {
                         .build().submit(this.plugin, this.sender);
             }
 
-            Message.APPLY_EDITS_SUCCESS.send(this.sender, "track", Component.text(track.getName()));
-            Message.APPLY_EDITS_SUCCESS_SUMMARY.send(this.sender, additions, deletions);
-            Message.APPLY_EDITS_TRACK_BEFORE.send(this.sender, before);
-            Message.APPLY_EDITS_TRACK_AFTER.send(this.sender, after);
+            builder.append(Message.APPLY_EDITS_SUCCESS.build("track", Component.text(track.getName()))).append(Component.newline());
+            builder.append(Message.APPLY_EDITS_SUCCESS_SUMMARY.build(additions, deletions)).append(Component.newline());
+            builder.append(Message.APPLY_EDITS_TRACK_BEFORE.build(before)).append(Component.newline());
+            builder.append(Message.APPLY_EDITS_TRACK_AFTER.build(after)).append(Component.newline());
 
             StorageAssistant.save(track, this.sender, this.plugin);
             return true;
@@ -302,7 +305,7 @@ public class WebEditorResponse {
 
             UUID uuid = Uuids.parse(id);
             if (uuid == null) {
-                Message.APPLY_EDITS_TARGET_USER_NOT_UUID.send(this.sender, id);
+                builder.append(Message.APPLY_EDITS_TARGET_USER_NOT_UUID.build(id)).append(Component.newline());
                 return false;
             }
 
@@ -312,13 +315,13 @@ public class WebEditorResponse {
                     this.plugin.getStorage().deletePlayerData(uuid).get();
                 } catch (Exception e) {
                     e.printStackTrace();
-                    Message.DELETE_ERROR.send(this.sender, Component.text(uuid.toString()));
+                    builder.append(Message.DELETE_ERROR.build(Component.text(uuid.toString()))).append(Component.newline());
                 }
                 return true;
             }
 
             if (ArgumentPermissions.checkModifyPerms(this.plugin, this.sender, CommandPermission.APPLY_EDITS, user)) {
-                Message.COMMAND_NO_PERMISSION.send(this.sender);
+                builder.append(Message.COMMAND_NO_PERMISSION.build()).append(Component.newline());
                 return false;
             }
 
@@ -329,11 +332,11 @@ public class WebEditorResponse {
                 this.plugin.getStorage().deletePlayerData(user.getUniqueId()).get();
             } catch (Exception e) {
                 e.printStackTrace();
-                Message.DELETE_ERROR.send(this.sender, user.getFormattedDisplayName());
+                builder.append(Message.DELETE_ERROR.build(user.getFormattedDisplayName())).append(Component.newline());
                 return true;
             }
 
-            Message.DELETE_SUCCESS.send(this.sender, user.getFormattedDisplayName());
+            builder.append(Message.DELETE_SUCCESS.build(user.getFormattedDisplayName())).append(Component.newline());
 
             LoggedAction.build().source(this.sender).target(user).targetType(Action.Target.Type.USER)
                     .description("webeditor", "delete")
@@ -346,7 +349,7 @@ public class WebEditorResponse {
             String groupName = changeInfo.getAsString();
 
             if (groupName.equalsIgnoreCase(GroupManager.DEFAULT_GROUP_NAME)) {
-                Message.DELETE_GROUP_ERROR_DEFAULT.send(this.sender);
+                builder.append(Message.DELETE_GROUP_ERROR_DEFAULT.build()).append(Component.newline());
                 return true;
             }
 
@@ -356,7 +359,7 @@ public class WebEditorResponse {
             }
 
             if (ArgumentPermissions.checkModifyPerms(this.plugin, this.sender, CommandPermission.APPLY_EDITS, group) || ArgumentPermissions.checkGroup(this.plugin, this.sender, group, ImmutableContextSetImpl.EMPTY)) {
-                Message.COMMAND_NO_PERMISSION.send(this.sender);
+                builder.append(Message.COMMAND_NO_PERMISSION.build()).append(Component.newline());
                 return false;
             }
 
@@ -364,11 +367,11 @@ public class WebEditorResponse {
                 this.plugin.getStorage().deleteGroup(group, DeletionCause.WEB_EDITOR).get();
             } catch (Exception e) {
                 e.printStackTrace();
-                Message.DELETE_ERROR.send(this.sender, group.getFormattedDisplayName());
+                builder.append(Message.DELETE_ERROR.build(group.getFormattedDisplayName())).append(Component.newline());
                 return true;
             }
 
-            Message.DELETE_SUCCESS.send(this.sender, group.getFormattedDisplayName());
+            builder.append(Message.DELETE_SUCCESS.build(group.getFormattedDisplayName())).append(Component.newline());
 
             LoggedAction.build().source(this.sender).target(group)
                     .description("webeditor", "delete")
@@ -386,7 +389,7 @@ public class WebEditorResponse {
             }
 
             if (ArgumentPermissions.checkModifyPerms(this.plugin, this.sender, CommandPermission.APPLY_EDITS, track)) {
-                Message.COMMAND_NO_PERMISSION.send(this.sender);
+                builder.append(Message.COMMAND_NO_PERMISSION.build()).append(Component.newline());
                 return false;
             }
 
@@ -394,11 +397,11 @@ public class WebEditorResponse {
                 this.plugin.getStorage().deleteTrack(track, DeletionCause.WEB_EDITOR).get();
             } catch (Exception e) {
                 e.printStackTrace();
-                Message.DELETE_ERROR.send(this.sender, Component.text(track.getName()));
+                builder.append(Message.DELETE_ERROR.build(Component.text(track.getName()))).append(Component.newline());
                 return true;
             }
 
-            Message.DELETE_SUCCESS.send(this.sender, Component.text(trackName));
+            builder.append(Message.DELETE_SUCCESS.build(Component.text(trackName))).append(Component.newline());
 
             LoggedAction.build().source(this.sender).target(track)
                     .description("webeditor", "delete")
@@ -429,5 +432,12 @@ public class WebEditorResponse {
             return !before.equals(after);
         }
 
+        public TextComponent.Builder getBuilder() {
+            return builder;
+        }
+
+        public TextComponent build() {
+            return builder.build();
+        }
     }
 }

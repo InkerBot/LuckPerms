@@ -55,11 +55,12 @@ public abstract class ChildCommand<T> extends Command<T> {
      * @param sender the sender to send the usage to
      */
     @Override
-    public void sendUsage(Sender sender, String label) {
+    public Component sendUsage(Sender sender, String label) {
         TextComponent.Builder builder = Component.text()
                 .append(Component.text('>', NamedTextColor.DARK_AQUA))
                 .append(Component.space())
-                .append(Component.text(getName().toLowerCase(Locale.ROOT), NamedTextColor.GREEN));
+                .append(Component.text(getName().toLowerCase(Locale.ROOT), NamedTextColor.GREEN))
+                .append(Component.newline());
 
         if (getArgs().isPresent()) {
             List<Component> argUsages = getArgs().get().stream()
@@ -68,10 +69,9 @@ public abstract class ChildCommand<T> extends Command<T> {
 
             builder.append(Component.text(" - ", NamedTextColor.DARK_AQUA))
                     .append(Component.join(Component.space(), argUsages))
-                    .build();
+                    .append(Component.newline());
         }
-
-        sender.sendMessage(builder.build());
+        return builder.build();
     }
 
     @Override

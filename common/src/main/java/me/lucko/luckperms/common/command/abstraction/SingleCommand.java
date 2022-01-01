@@ -59,11 +59,12 @@ public abstract class SingleCommand extends Command<Void> {
     public abstract void execute(LuckPermsPlugin plugin, Sender sender, ArgumentList args, String label) throws CommandException;
 
     @Override
-    public void sendUsage(Sender sender, String label) {
+    public Component sendUsage(Sender sender, String label) {
         TextComponent.Builder builder = Component.text()
                 .append(Component.text('>', NamedTextColor.DARK_AQUA))
                 .append(Component.space())
-                .append(Component.text(getName().toLowerCase(Locale.ROOT), NamedTextColor.GREEN));
+                .append(Component.text(getName().toLowerCase(Locale.ROOT), NamedTextColor.GREEN))
+                .append(Component.newline());
 
         if (getArgs().isPresent()) {
             List<Component> argUsages = getArgs().get().stream()
@@ -71,11 +72,9 @@ public abstract class SingleCommand extends Command<Void> {
                     .collect(Collectors.toList());
 
             builder.append(Component.text(" - ", NamedTextColor.DARK_AQUA))
-                    .append(Component.join(Component.space(), argUsages))
-                    .build();
+                    .append(Component.join(Component.space(), argUsages));
         }
-
-        sender.sendMessage(builder.build());
+        return builder.build();
     }
 
     @Override

@@ -54,7 +54,7 @@ public class DeleteTrack extends SingleCommand {
     @Override
     public void execute(LuckPermsPlugin plugin, Sender sender, ArgumentList args, String label) {
         if (args.isEmpty()) {
-            sendUsage(sender, label);
+            sender.sendMessage(sendUsage(sender, label));
             return;
         }
 

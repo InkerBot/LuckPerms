@@ -161,7 +161,7 @@ public abstract class Command<T> {
      * @param sender the sender to send the usage to
      * @param label the label used when executing the command
      */
-    public abstract void sendUsage(Sender sender, String label);
+    public abstract Component sendUsage(Sender sender, String label);
 
     /**
      * Sends a detailed command usage message to the Sender.
